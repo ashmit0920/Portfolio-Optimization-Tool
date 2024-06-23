@@ -22,6 +22,15 @@ The expected returns and covariance matrix is calculated for 5 companies, the yf
 
 The user interface is created using **Dash**, a web framework for building analytical web applications in Python. The UI provides input fields to enter the company names (ticker symbols), start and end dates for the data to be analyzed and a Risk Tolerance slider.
 
+To run the program, clone the repo and run the main.py file.
+```
+python main.py
+```
+Open a web browser and navigate to:
+```
+http://127.0.0.1:8050/
+```
+
 On clicking the "Optimize" button, a Return v/s Volatility graph is plotted and the Optimal weights and various other performance metrics are calculated and displayed. The "X" in the graph symbolizes the maximum **Sharpe Ratio**.
 
 ![UI screenshot](./User%20Interface.png)
@@ -30,6 +39,6 @@ On clicking the "Optimize" button, a Return v/s Volatility graph is plotted and 
 
 - **Enhance the Model:** Incorporate more sophisticated risk measures, such as Value at Risk (VaR) or Conditional Value at Risk (CVaR).
 
-- **User Interface:** Building a web interface using Flask or Dash to allow users to input their own preferences and view results dynamically.
+- **User-defined constraints:** Allow users to set specific constraints, such as minimum and maximum allocation for each asset, or constraints on sector or asset type allocations.
 
 - **Performance Monitoring:** Set up a system to track the performance of the optimized portfolio over time and compare it with benchmarks.
