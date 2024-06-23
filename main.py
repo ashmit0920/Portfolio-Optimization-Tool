@@ -120,7 +120,7 @@ app.layout = dbc.Container([
             dbc.Row([
                 dbc.Col([
                     dbc.Label("Enter Ticker Symbols (comma separated)"),
-                    dbc.Input(id='tickers', placeholder="AAPL, MSFT, GOOGL, AMZN, META", type="text")
+                    dbc.Input(id='tickers', placeholder="AAPL, MSFT, GOOGL, AMZN, FB", type="text")
                 ]),
             ]),
             dbc.Row([
@@ -132,7 +132,20 @@ app.layout = dbc.Container([
             dbc.Row([
                 dbc.Col([
                     dbc.Label("End Date"),
-                    dbc.Input(id='end-date', placeholder="2024-01-01", type="text")
+                    dbc.Input(id='end-date', placeholder="2023-01-01", type="text")
+                ]),
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("Risk Tolerance"),
+                    dcc.Slider(
+                        id='risk-tolerance',
+                        min=0,
+                        max=1,
+                        step=0.1,
+                        marks={i / 10: str(i / 10) for i in range(11)},
+                        value=0.5
+                    )
                 ]),
             ]),
             dbc.Button("Optimize", id='optimize-button', color="primary")
@@ -155,9 +168,10 @@ app.layout = dbc.Container([
     [Input('optimize-button', 'n_clicks')],
     [dash.dependencies.State('tickers', 'value'),
      dash.dependencies.State('start-date', 'value'),
-     dash.dependencies.State('end-date', 'value')]
+     dash.dependencies.State('end-date', 'value'),
+     dash.dependencies.State('risk-tolerance', 'value')]
 )
-def update_output(n_clicks, tickers, start_date, end_date):
+def update_output(n_clicks, tickers, start_date, end_date, risk_tolerance):
     if not n_clicks:
         return go.Figure(), ""
 
@@ -167,11 +181,14 @@ def update_output(n_clicks, tickers, start_date, end_date):
     mean_returns = returns.mean()
     cov_matrix = returns.cov()
     
-    optimal_portfolio = optimize_portfolio(mean_returns, cov_matrix)
+    # Adjust risk-free rate based on risk tolerance
+    risk_free_rate = 0.01 * (1 - risk_tolerance)
+    
+    optimal_portfolio = optimize_portfolio(mean_returns, cov_matrix, risk_free_rate)
     optimal_weights = optimal_portfolio.x
     optimal_weights_str = ', '.join([f"{ticker}: {weight:.2%}" for ticker, weight in zip(tickers, optimal_weights)])
     
-    fig = plot_efficient_frontier(mean_returns, cov_matrix)
+    fig = plot_efficient_frontier(mean_returns, cov_matrix, risk_free_rate)
     
     return fig, optimal_weights_str
 
