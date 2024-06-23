@@ -4,14 +4,21 @@ A portfolio optimization tool helps investors allocate their assets in a way tha
 
 ## Install Required Libraries
 
-Type the following command in your terminal.
+Setup a virtual environment to prevent dependency conflicts (highly recommended). Type the following commands in a Windows terminal inside the project directory.
 ```
-pip install pandas numpy matplotlib scipy yfinance cvxpy
+python -m venv venv
+```
+```
+venv\Scripts\Activate
+```
+Install the required libraries.
+```
+pip install dash dash-bootstrap-components yfinance pandas numpy matplotlib scipy cvxpy
 ```
 
 ## Working 
 
-The expected returns and covariance matrix is calculated for 5 companies. An optimization function is defined to maximize the Sharpe ratio. Certain constraints are added to ensure a more balanced portfolio and avoid "corner solutions", such as setting minimum and maximum weights for each asset. Another approach is to add a regularization term to the optimization objective to penalize highly concentrated portfolios. At the end, the efficient frontier is plotted for visualization purposes.
+The expected returns and covariance matrix is calculated for 5 companies, the yfinance library is used to collect the data. An optimization function is defined to maximize the Sharpe ratio. Certain constraints are added to ensure a more balanced portfolio and avoid "corner solutions", such as setting minimum and maximum weights for each asset. Another approach is to add a regularization term to the optimization objective to penalize highly concentrated portfolios. At the end, the efficient frontier is plotted for visualization purposes.
 
 ## Future updates
 
