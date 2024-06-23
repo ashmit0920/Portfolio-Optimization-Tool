@@ -20,6 +20,12 @@ pip install dash dash-bootstrap-components yfinance pandas numpy matplotlib scip
 
 The expected returns and covariance matrix is calculated for 5 companies, the yfinance library is used to collect the data. An optimization function is defined to maximize the Sharpe ratio. Certain constraints are added to ensure a more balanced portfolio and avoid "corner solutions", such as setting minimum and maximum weights for each asset. Another approach is to add a regularization term to the optimization objective to penalize highly concentrated portfolios. At the end, the efficient frontier is plotted for visualization purposes.
 
+The user interface is created using **Dash**, a web framework for building analytical web applications in Python. The UI provides input fields to enter the company names (ticker symbols), start and end dates for the data to be analyzed and a Risk Tolerance slider.
+
+On clicking the "Optimize" button, a Return v/s Volatility graph is plotted and the Optimal weights and various other performance metrics are calculated and displayed. The "X" in the graph symbolizes the maximum **Sharpe Ratio**.
+
+![UI screenshot](./User%20Interface.png)
+
 ## Future updates
 
 - **Enhance the Model:** Incorporate more sophisticated risk measures, such as Value at Risk (VaR) or Conditional Value at Risk (CVaR).
