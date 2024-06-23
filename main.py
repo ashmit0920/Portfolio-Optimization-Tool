@@ -7,6 +7,12 @@ import yfinance as yf
 from scipy.optimize import minimize
 import cvxpy as cp
 
+import dash
+from dash import html, dcc
+from dash.dependencies import Input, Output
+import dash_bootstrap_components as dbc
+import plotly.graph_objs as go
+
 tickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META']
 data = yf.download(tickers, start='2020-01-01', end='2024-01-01')['Adj Close']
 
@@ -57,7 +63,7 @@ print("Sharpe Ratio: ", sharpe_ratio)
 
 """## Visualization"""
 
-def plot_efficient_frontier(mean_returns, cov_matrix, num_portfolios=10000, risk_free_rate=0.01):
+def plot_efficient_frontier(mean_returns, cov_matrix, risk_free_rate=0.01, num_portfolios=10000):
     results = np.zeros((3, num_portfolios))
     weights_record = []
     num_assets = len(mean_returns)
@@ -75,14 +81,99 @@ def plot_efficient_frontier(mean_returns, cov_matrix, num_portfolios=10000, risk
     sdp, rp = results[0, max_sharpe_idx], results[1, max_sharpe_idx]
     max_sharpe_allocation = weights_record[max_sharpe_idx]
 
-    plt.figure(figsize=(10, 7))
-    plt.scatter(results[0,:], results[1,:], c=results[2,:], cmap='YlGnBu', marker='o')
-    plt.colorbar(label='Sharpe ratio')
-    plt.scatter(sdp, rp, marker='*', color='r', s=500, label='Maximum Sharpe ratio')
-    plt.title('Efficient Frontier')
-    plt.xlabel('Volatility')
-    plt.ylabel('Return')
-    plt.legend(labelspacing=0.8)
-    plt.show()
+    trace1 = go.Scatter(
+        x=results[0,:],
+        y=results[1,:],
+        mode='markers',
+        marker=dict(color=results[2,:], colorscale='Viridis', showscale=True),
+        text=weights_record
+    )
+    trace2 = go.Scatter(
+        x=[sdp],
+        y=[rp],
+        mode='markers',
+        marker=dict(color='red', size=14, symbol='x'),
+        name='Maximum Sharpe ratio'
+    )
 
-plot_efficient_frontier(mean_returns, cov_matrix)
+    data = [trace1, trace2]
+
+    layout = go.Layout(
+        title='Efficient Frontier',
+        xaxis=dict(title='Volatility'),
+        yaxis=dict(title='Return'),
+        showlegend=True
+    )
+
+    fig = go.Figure(data=data, layout=layout)
+    return fig
+
+
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+app.layout = dbc.Container([
+    dbc.Row([
+        dbc.Col(html.H1("Portfolio Optimization Tool", className='text-center'), className="mb-4 mt-4")
+    ]),
+    dbc.Row([
+        dbc.Col([
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("Enter Ticker Symbols (comma separated)"),
+                    dbc.Input(id='tickers', placeholder="AAPL, MSFT, GOOGL, AMZN, META", type="text")
+                ]),
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("Start Date"),
+                    dbc.Input(id='start-date', placeholder="2020-01-01", type="text")
+                ]),
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("End Date"),
+                    dbc.Input(id='end-date', placeholder="2024-01-01", type="text")
+                ]),
+            ]),
+            dbc.Button("Optimize", id='optimize-button', color="primary")
+        ], width=4),
+        dbc.Col([
+            dcc.Graph(id='efficient-frontier')
+        ], width=8)
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.H4("Optimal Weights"),
+            html.Div(id='optimal-weights')
+        ])
+    ])
+])
+
+@app.callback(
+    [Output('efficient-frontier', 'figure'),
+     Output('optimal-weights', 'children')],
+    [Input('optimize-button', 'n_clicks')],
+    [dash.dependencies.State('tickers', 'value'),
+     dash.dependencies.State('start-date', 'value'),
+     dash.dependencies.State('end-date', 'value')]
+)
+def update_output(n_clicks, tickers, start_date, end_date):
+    if not n_clicks:
+        return go.Figure(), ""
+
+    tickers = [ticker.strip() for ticker in tickers.split(',')]
+    data = yf.download(tickers, start=start_date, end=end_date)['Adj Close']
+    returns = data.pct_change().dropna()
+    mean_returns = returns.mean()
+    cov_matrix = returns.cov()
+    
+    optimal_portfolio = optimize_portfolio(mean_returns, cov_matrix)
+    optimal_weights = optimal_portfolio.x
+    optimal_weights_str = ', '.join([f"{ticker}: {weight:.2%}" for ticker, weight in zip(tickers, optimal_weights)])
+    
+    fig = plot_efficient_frontier(mean_returns, cov_matrix)
+    
+    return fig, optimal_weights_str
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
