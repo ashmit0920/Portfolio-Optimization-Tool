@@ -109,7 +109,7 @@ def plot_efficient_frontier(mean_returns, cov_matrix, risk_free_rate=0.01, num_p
     return fig
 
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], title='Portfolio Optimization Tool')
 
 app.layout = dbc.Container([
     dbc.Row([
@@ -120,7 +120,7 @@ app.layout = dbc.Container([
             dbc.Row([
                 dbc.Col([
                     dbc.Label("Enter Ticker Symbols (comma separated)"),
-                    dbc.Input(id='tickers', placeholder="AAPL, MSFT, GOOGL, AMZN, FB", type="text")
+                    dbc.Input(id='tickers', placeholder="AAPL, MSFT, GOOGL, AMZN, META", type="text")
                 ]),
             ]),
             dbc.Row([
@@ -132,7 +132,7 @@ app.layout = dbc.Container([
             dbc.Row([
                 dbc.Col([
                     dbc.Label("End Date"),
-                    dbc.Input(id='end-date', placeholder="2023-01-01", type="text")
+                    dbc.Input(id='end-date', placeholder="2024-06-01", type="text")
                 ]),
             ]),
             dbc.Row([
@@ -159,12 +159,19 @@ app.layout = dbc.Container([
             html.H4("Optimal Weights"),
             html.Div(id='optimal-weights')
         ])
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.H4("Performance Metrics"),
+            html.Div(id='performance-metrics')
+        ])
     ])
 ])
 
 @app.callback(
     [Output('efficient-frontier', 'figure'),
-     Output('optimal-weights', 'children')],
+     Output('optimal-weights', 'children'),
+     Output('performance-metrics', 'children')],
     [Input('optimize-button', 'n_clicks')],
     [dash.dependencies.State('tickers', 'value'),
      dash.dependencies.State('start-date', 'value'),
@@ -173,7 +180,7 @@ app.layout = dbc.Container([
 )
 def update_output(n_clicks, tickers, start_date, end_date, risk_tolerance):
     if not n_clicks:
-        return go.Figure(), ""
+        return go.Figure(), "", ""
 
     tickers = [ticker.strip() for ticker in tickers.split(',')]
     data = yf.download(tickers, start=start_date, end=end_date)['Adj Close']
@@ -190,7 +197,10 @@ def update_output(n_clicks, tickers, start_date, end_date, risk_tolerance):
     
     fig = plot_efficient_frontier(mean_returns, cov_matrix, risk_free_rate)
     
-    return fig, optimal_weights_str
+    std_dev, returns, sharpe_ratio = portfolio_performance(optimal_weights, mean_returns, cov_matrix, risk_free_rate)
+    performance_metrics = f"Expected Return: {returns:.2%}, Expected Volatility: {std_dev:.2%}, Sharpe Ratio: {sharpe_ratio:.2f}"
+    
+    return fig, optimal_weights_str, performance_metrics
 
 if __name__ == '__main__':
     app.run_server(debug=True)
