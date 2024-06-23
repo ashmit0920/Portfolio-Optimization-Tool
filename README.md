@@ -4,9 +4,9 @@ A portfolio optimization tool helps investors allocate their assets in a way tha
 
 ## Install Required Libraries
 
-'''
+```
 pip install pandas numpy matplotlib scipy yfinance cvxpy
-'''
+```
 
 ## Working 
 
