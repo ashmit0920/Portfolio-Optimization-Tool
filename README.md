@@ -9,7 +9,7 @@ Setup a virtual environment to prevent dependency conflicts (highly recommended)
 python -m venv venv
 ```
 ```
-venv\Scripts\Activate
+venv\bin\activate
 ```
 Install the required libraries.
 ```
