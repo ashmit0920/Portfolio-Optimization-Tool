@@ -1,5 +1,3 @@
-"""## Data collection, risk and return calculation"""
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,6 +11,7 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
 
+# Data collection, risk and return calculation
 tickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META']
 data = yf.download(tickers, start='2020-01-01', end='2024-01-01')['Adj Close']
 
@@ -25,7 +24,7 @@ mean_returns = returns.mean()
 # Covariance matrix of returns
 cov_matrix = returns.cov()
 
-"""## Optimization function"""
+# Optimization function
 
 def portfolio_performance(weights, mean_returns, cov_matrix, risk_free_rate=0.01):
     returns = np.dot(weights, mean_returns)
@@ -49,7 +48,7 @@ def optimize_portfolio(mean_returns, cov_matrix, risk_free_rate=0.01, min_weight
                       method='SLSQP', bounds=bounds, constraints=constraints)
     return result
 
-"""## Running the optimization"""
+# Running the optimization
 
 optimal_portfolio = optimize_portfolio(mean_returns, cov_matrix)
 optimal_weights = optimal_portfolio.x
@@ -61,7 +60,7 @@ print("Expected Return: ", returns)
 print("Expected Volatility: ", std_dev)
 print("Sharpe Ratio: ", sharpe_ratio)
 
-"""## Visualization"""
+# Visualization
 
 def plot_efficient_frontier(mean_returns, cov_matrix, risk_free_rate=0.01, num_portfolios=10000):
     results = np.zeros((3, num_portfolios))
@@ -108,6 +107,10 @@ def plot_efficient_frontier(mean_returns, cov_matrix, risk_free_rate=0.01, num_p
     fig = go.Figure(data=data, layout=layout)
     return fig
 
+def calculate_var(weights, returns, confidence_level=0.95):
+    portfolio_returns = np.dot(returns, weights)
+    var = np.percentile(portfolio_returns, (1 - confidence_level) * 100)
+    return var
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], title='Portfolio Optimization Tool')
 
@@ -178,6 +181,7 @@ app.layout = dbc.Container([
      dash.dependencies.State('end-date', 'value'),
      dash.dependencies.State('risk-tolerance', 'value')]
 )
+
 def update_output(n_clicks, tickers, start_date, end_date, risk_tolerance):
     if not n_clicks:
         return go.Figure(), "", ""
@@ -198,7 +202,10 @@ def update_output(n_clicks, tickers, start_date, end_date, risk_tolerance):
     fig = plot_efficient_frontier(mean_returns, cov_matrix, risk_free_rate)
     
     std_dev, returns, sharpe_ratio = portfolio_performance(optimal_weights, mean_returns, cov_matrix, risk_free_rate)
-    performance_metrics = f"Expected Return: {returns:.2%}, Expected Volatility: {std_dev:.2%}, Sharpe Ratio: {sharpe_ratio:.2f}"
+    var = calculate_var(optimal_weights, returns)
+    
+    performance_metrics = (f"Expected Return: {returns:.2%}, Expected Volatility: {std_dev:.2%}, "
+                           f"Sharpe Ratio: {sharpe_ratio:.2f}, VaR: {var:.2%}")
     
     return fig, optimal_weights_str, performance_metrics
 
