@@ -45,6 +45,8 @@ docker build -t portfolio-optimizer .
 docker run -p 8050:8050 portfolio-optimizer
 ```
 
+Open a web browser and navigate to: ```http://127.0.0.1:8050/ ```
+
 ## Future updates
 
 - **Enhance the Model:** Incorporate more sophisticated risk measures, such as Value at Risk (VaR) or Conditional Value at Risk (CVaR).
