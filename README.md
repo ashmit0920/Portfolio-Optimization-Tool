@@ -49,7 +49,7 @@ Open a web browser and navigate to: ```http://127.0.0.1:8050/ ```
 
 ## Future updates
 
-- **Enhance the Model:** Incorporate more sophisticated risk measures, such as Value at Risk (VaR) or Conditional Value at Risk (CVaR).
+- **Enhance the Model:** Incorporate more sophisticated risk measures, such as Conditional Value at Risk (CVaR).
 
 - **User-defined constraints:** Allow users to set specific constraints, such as minimum and maximum allocation for each asset, or constraints on sector or asset type allocations.
 
