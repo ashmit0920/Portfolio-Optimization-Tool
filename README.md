@@ -35,6 +35,16 @@ On clicking the "Optimize" button, a Return v/s Volatility graph is plotted and 
 
 ![UI screenshot](./User%20Interface.png)
 
+## Run using Docker
+
+Make sure you have Docker installed on your PC. You don't need to follow the steps mentioned above while using Docker. Clone the repo and navigate to the project directory from your terminal. Then, type -
+```
+docker build -t portfolio-optimizer .
+```
+```
+docker run -p 8050:8050 portfolio-optimizer
+```
+
 ## Future updates
 
 - **Enhance the Model:** Incorporate more sophisticated risk measures, such as Value at Risk (VaR) or Conditional Value at Risk (CVaR).
